@@ -21,7 +21,7 @@ const pseudoRandom = (seed) => {
 
     return function() {
         value = (value * 1103515245 + 12345) % 2147483648;
-        return Math.floor(value % 100 < 13);
+        return value % 100 < 19;
     }
 }
 
@@ -110,6 +110,7 @@ const drawOnlyVertex = (Coords, i) => {
     ctx.fill();
     ctx.fillStyle = 'black';
     ctx.fillText((i + 1).toString(), Coords.xCoord[i], Coords.yCoord[i]);
+    ctx.closePath();
 }
 
 const drawVertexes = (ctx, count, x, y) => {
@@ -180,6 +181,7 @@ const drawStitch = (Coords, i) => {
     ctx.arc(Coords.xCoord[i] - VERTEX_RADIUS, Coords.yCoord[i] - VERTEX_RADIUS,
         VERTEX_RADIUS, Math.PI * 2, 0);
     ctx.stroke();
+    ctx.closePath();
 }
 
 const drawLine = (Coords, i, j) => {
@@ -187,35 +189,57 @@ const drawLine = (Coords, i, j) => {
     ctx.moveTo(Coords.xCoord[i], Coords.yCoord[i]);
     ctx.lineTo(Coords.xCoord[j], Coords.yCoord[j]);
     ctx.stroke();
+    ctx.closePath();
 }
 
-const drawEllipse = (Coords, i, j, angle, val) => {
-    const middleX = (Coords.xCoord[i] + Coords.xCoord[j]) / 2;
-    const middleY = (Coords.yCoord[i] + Coords.yCoord[j]) / 2;
+const drawEllipse = (Coords, i, j, angle) => {
+    const endX = Coords.xCoord[j] - VERTEX_RADIUS * Math.cos(angle);
+    const endY = Coords.yCoord[j] - VERTEX_RADIUS * Math.sin(angle);
+    const startX = Coords.xCoord[i],
+        startY = Coords.yCoord[i]
+    const middleX = (startX + endX) / 2;
+    const middleY = (startY + endY) / 2;
+    const newAngle = Math.atan2((endY - startY), (endX - startX));
+    const radius = vectorModule(vector(startX, startY, endX, endY))
     ctx.beginPath();
     ctx.moveTo(Coords.xCoord[i], Coords.yCoord[i]);
-    ctx.ellipse(middleX, middleY, val / 2, VERTEX_RADIUS * 2,
-        angle, Math.PI, 0);
+    ctx.ellipse(middleX, middleY, radius / 2, VERTEX_RADIUS * 2,
+        newAngle, Math.PI, 0);
     ctx.stroke();
+    ctx.closePath();
+    return newAngle;
 }
 
-const drawArrows = (angle, xArrow, yArrow) => {
-    const leftX = xArrow - 10 * Math.cos(angle + 0.7),
-        rightX = xArrow - 10 * Math.cos(angle - 0.7),
-        leftY = yArrow - 10 * Math.sin(angle + 0.7),
-        rightY = yArrow - 10 * Math.sin(angle - 0.7);
+const drawArrows = (angle, xArrow, yArrow, n = 0) => {
+    let leftX,
+        rightX,
+        leftY,
+        rightY;
+    if (n === 1){
+        leftX = xArrow - 10 * Math.cos(angle + 0.5 + Math.PI / 3);
+        rightX = xArrow - 10 * Math.cos(angle - 0.5 + Math.PI / 3);
+        leftY = yArrow - 10 * Math.sin(angle + 0.5 + Math.PI / 3);
+        rightY = yArrow - 10 * Math.sin(angle - 0.5 + Math.PI / 3);
+    }
+    else {
+        leftX = xArrow - 10 * Math.cos(angle + 0.5);
+        rightX = xArrow - 10 * Math.cos(angle - 0.5);
+        leftY = yArrow - 10 * Math.sin(angle + 0.5);
+        rightY = yArrow - 10 * Math.sin(angle - 0.5);
+    }
     ctx.beginPath();
     ctx.moveTo(xArrow, yArrow);
     ctx.lineTo(leftX, leftY);
     ctx.moveTo(xArrow, yArrow);
     ctx.lineTo(rightX, rightY);
     ctx.stroke();
+    ctx.closePath();
 }
 
-const arrow = (Coords, j, angle, vertexRadius) => {
+const arrow = (Coords, j, angle, vertexRadius, n) => {
     const xArrow = Coords.xCoord[j] - vertexRadius * Math.cos(angle);
     const yArrow = Coords.yCoord[j] - vertexRadius * Math.sin(angle);
-    drawArrows(angle, xArrow, yArrow);
+    drawArrows(angle, xArrow, yArrow, n);
 }
 
 const calculateAngle = (Coords, i, j) => {
@@ -236,19 +260,21 @@ const drawDirMatrixEdges = (x, y, n) => {
                 const val = lineVal(Coords, i, j);
                 if (i === j) {
                     drawStitch(Coords, i);
-                    arrow(Coords, j, angle, VERTEX_RADIUS);
+                    arrow(Coords, j, -angle, VERTEX_RADIUS);
                 }
                 else if (matrix[j][i] === 1 && j > i){
-                    drawEllipse(Coords, i, j, angle, val);
-                    arrow(Coords, j, angle, VERTEX_RADIUS);
+                    const valid = 1;
+                    drawEllipse(Coords, i, j, angle);
+                    arrow(Coords, j, angle, VERTEX_RADIUS, valid);
                 }
                 else if (vectorModule(vector(Coords.xCoord[i], Coords.yCoord[i], Coords.xCoord[j], Coords.yCoord[j])) <= 180){
                     drawLine(Coords, i, j);
                     arrow(Coords, j, angle, VERTEX_RADIUS);
                 }
                 else if (val !== null){
-                    drawEllipse(Coords, i, j, angle, val);
-                    arrow(Coords, j, angle, VERTEX_RADIUS);
+                    const valid = 1;
+                    drawEllipse(Coords, i, j, angle);
+                    arrow(Coords, j, angle, VERTEX_RADIUS, valid);
                 }
                 else {
                     drawLine(Coords, i, j);
