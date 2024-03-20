@@ -1,7 +1,8 @@
 const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
-const vertexCount = 10;
-const vertexRadius = 10;
+const VERTEX_COUNT = 10;
+const VERTEX_RADIUS = 15;
+const N = 3105;
 const vector = (x1, y1, x2, y2) => {
     const x = x2 - x1,
         y = y2 - y1;
@@ -19,19 +20,19 @@ const pseudoRandom = (seed) => {
     let value = seed;
 
     return function() {
-        value = value + value % 5;
-        return value % 2;
+        value = (value * 1103515245 + 12345) % 2147483648;
+        return Math.floor(value % 100 < 13);
     }
 }
 
 const createDirMatrix = (n) => {
     const n1 = Math.floor(n / 1000),
-        n2 = Math.floor((n - n1 * 1000)/100),
-        n3 = Math.floor((n - n1 * 1000 - n2 * 100)/10),
-        n4 = Math.floor((n - n1*1000-n2*100-n3*10))
+        n2 = Math.floor((n - n1 * 1000) / 100),
+        n3 = Math.floor((n - n1 * 1000 - n2 * 100) / 10),
+        n4 = Math.floor((n - n1 * 1000 - n2 * 100 - n3 * 10))
     const variant = [n1, n2, n3, n4];
     const count = 10 + variant[2];
-    let generator = pseudoRandom(1);
+    const generator = pseudoRandom(n);
     let matrix = new Array(count);
     for (let i = 0; i < count; i++) {
         matrix[i] = new Array(count);
@@ -100,9 +101,9 @@ const findVertexCoord = (vertexCount, firstCoordX, firstCoordy) => {
     return Coords;
 }
 
-const drawOnlyVertice = (Coords, i) => {
+const drawOnlyVertex = (Coords, i) => {
     ctx.beginPath();
-    ctx.arc(Coords.xCoord[i], Coords.yCoord[i], vertexRadius, 0, Math.PI * 2);
+    ctx.arc(Coords.xCoord[i], Coords.yCoord[i], VERTEX_RADIUS, 0, Math.PI * 2);
     ctx.strokeStyle = 'black';
     ctx.stroke();
     ctx.fillStyle = 'white';
@@ -111,7 +112,7 @@ const drawOnlyVertice = (Coords, i) => {
     ctx.fillText((i + 1).toString(), Coords.xCoord[i], Coords.yCoord[i]);
 }
 
-const drawVertices = (ctx, count, x, y) => {
+const drawVertexes = (ctx, count, x, y) => {
     ctx.fillStyle = 'black';
     ctx.font = '12px Arial';
     ctx.textAlign = 'center';
@@ -119,7 +120,7 @@ const drawVertices = (ctx, count, x, y) => {
 
     for (let i = 0; i < count; i++) {
         const Coords = findVertexCoord(count, x, y);
-        drawOnlyVertice(Coords, i);
+        drawOnlyVertex(Coords, i);
     }
 }
 
@@ -131,19 +132,19 @@ const lineVal = (Coords, i, j) => {
     const vector1 = vector(startX, startY, endX, endY);
     const a = vectorModule(vector1);
     let valResult = null;
-        for (let k = 0; k < Coords.xCoord.length; k++){
-            if(k === i || k === j) continue;
-            const vector2 = vector(startX, startY, Coords.xCoord[k], Coords.yCoord[k]);
-            const vector3 = vector(Coords.xCoord[k], Coords.yCoord[k], endX, endY);
-            const b = vectorModule(vector2);
-            const c = vectorModule(vector3);
-            const p = (a + b + c) / 2;
-            const height = Math.sqrt(p * (p - a) * (p - b) * (p - c)) * 2 / a;
-            if (height + 2 < vertexRadius) {
-                valResult = a;
-                break;
-            }
+    for (let k = 0; k < Coords.xCoord.length; k++){
+        if(k === i || k === j) continue;
+        const vector2 = vector(startX, startY, Coords.xCoord[k], Coords.yCoord[k]);
+        const vector3 = vector(Coords.xCoord[k], Coords.yCoord[k], endX, endY);
+        const b = vectorModule(vector2);
+        const c = vectorModule(vector3);
+        const p = (a + b + c) / 2;
+        const height = Math.sqrt(p * (p - a) * (p - b) * (p - c)) * 2 / a;
+        if (height < VERTEX_RADIUS) {
+            valResult = a;
+            break;
         }
+    }
     return valResult;
 }
 
@@ -176,8 +177,8 @@ const matrixOutput = (matrix, tableId) => {
 const drawStitch = (Coords, i) => {
     ctx.beginPath();
     ctx.moveTo(Coords.xCoord[i], Coords.yCoord[i]);
-    ctx.arc(Coords.xCoord[i] - vertexRadius, Coords.yCoord[i] - vertexRadius,
-        vertexRadius, Math.PI * 2, 0);
+    ctx.arc(Coords.xCoord[i] - VERTEX_RADIUS, Coords.yCoord[i] - VERTEX_RADIUS,
+        VERTEX_RADIUS, Math.PI * 2, 0);
     ctx.stroke();
 }
 
@@ -188,15 +189,35 @@ const drawLine = (Coords, i, j) => {
     ctx.stroke();
 }
 
-const drawEllipce = (Coords, i, j, angle, val) => {
+const drawEllipse = (Coords, i, j, angle, val) => {
     const middleX = (Coords.xCoord[i] + Coords.xCoord[j]) / 2;
     const middleY = (Coords.yCoord[i] + Coords.yCoord[j]) / 2;
     ctx.beginPath();
     ctx.moveTo(Coords.xCoord[i], Coords.yCoord[i]);
-    ctx.ellipse(middleX, middleY, val / 2, vertexRadius * 2,
+    ctx.ellipse(middleX, middleY, val / 2, VERTEX_RADIUS * 2,
         angle, Math.PI, 0);
     ctx.stroke();
 }
+
+const drawArrows = (angle, xArrow, yArrow) => {
+    const leftX = xArrow - 10 * Math.cos(angle + 0.7),
+        rightX = xArrow - 10 * Math.cos(angle - 0.7),
+        leftY = yArrow - 10 * Math.sin(angle + 0.7),
+        rightY = yArrow - 10 * Math.sin(angle - 0.7);
+    ctx.beginPath();
+    ctx.moveTo(xArrow, yArrow);
+    ctx.lineTo(leftX, leftY);
+    ctx.moveTo(xArrow, yArrow);
+    ctx.lineTo(rightX, rightY);
+    ctx.stroke();
+}
+
+const arrow = (Coords, j, angle, vertexRadius) => {
+    const xArrow = Coords.xCoord[j] - vertexRadius * Math.cos(angle);
+    const yArrow = Coords.yCoord[j] - vertexRadius * Math.sin(angle);
+    drawArrows(angle, xArrow, yArrow);
+}
+
 const calculateAngle = (Coords, i, j) => {
     const startX = Coords.xCoord[i];
     const startY = Coords.yCoord[i];
@@ -205,65 +226,64 @@ const calculateAngle = (Coords, i, j) => {
     return Math.atan2(endY - startY, endX - startX);
 }
 
-const drawDirMatrixEdges = (x, y) => {
-    const matrix = createDirMatrix(3105);
-    const Coords = findVertexCoord(vertexCount, x, y);
-    for (let i = 0; i < vertexCount; i++) {
-        for (let j = 0; j < vertexCount; j++) {
+const drawDirMatrixEdges = (x, y, n) => {
+    const matrix = createDirMatrix(n);
+    const Coords = findVertexCoord(VERTEX_COUNT, x, y);
+    for (let i = 0; i < VERTEX_COUNT; i++) {
+        for (let j = 0; j < VERTEX_COUNT; j++) {
             if (matrix[i][j] === 1) {
                 const angle = calculateAngle(Coords, i, j);
                 const val = lineVal(Coords, i, j);
                 if (i === j) {
                     drawStitch(Coords, i);
-                    continue;
+                    arrow(Coords, j, angle, VERTEX_RADIUS);
                 }
                 else if (matrix[j][i] === 1 && j > i){
-                    drawEllipce(Coords, i, j, angle, val);
-                    continue;
+                    drawEllipse(Coords, i, j, angle, val);
+                    arrow(Coords, j, angle, VERTEX_RADIUS);
                 }
                 else if (vectorModule(vector(Coords.xCoord[i], Coords.yCoord[i], Coords.xCoord[j], Coords.yCoord[j])) <= 180){
                     drawLine(Coords, i, j);
-                    continue;
+                    arrow(Coords, j, angle, VERTEX_RADIUS);
                 }
                 else if (val !== null){
-                    drawEllipce(Coords, i, j, angle, val);
-                    continue;
+                    drawEllipse(Coords, i, j, angle, val);
+                    arrow(Coords, j, angle, VERTEX_RADIUS);
                 }
-                drawLine(Coords, i, j);
+                else {
+                    drawLine(Coords, i, j);
+                    arrow(Coords, j, angle, VERTEX_RADIUS);
+                }
             }
         }
     }
 }
 
-const drawUndirMatrixEdges = (x, y) => {
-    const matrix = undirMatrix(createDirMatrix(3105));
-    const Coords = findVertexCoord(vertexCount, x, y);
-    for (let i = 0; i < vertexCount; i++) {
-        for (let j = 0; j < i; j++) {
+const drawUndirMatrixEdges = (x, y, n) => {
+    const matrix = undirMatrix(createDirMatrix(n));
+    const Coords = findVertexCoord(VERTEX_COUNT, x, y);
+    for (let i = 0; i < VERTEX_COUNT; i++) {
+        for (let j = 0; j <= i; j++) {
             if (matrix[i][j] === 1) {
                 const angle = calculateAngle(Coords, i, j);
                 const val = lineVal(Coords, i, j);
                 if (i === j) {
                     drawStitch(Coords, i);
-                    continue;
                 }
                 else if (val !== null && Math.abs(i - j) !== 1){
-                    drawEllipce(Coords, i, j, angle, val);
-                    continue;
+                    drawEllipse(Coords, i, j, angle, val);
                 }
                 else if (matrix[j][i] === 1){
                     drawLine(Coords, i, j);
-                    continue;
                 }
-
-                drawEllipce(Coords, i, j, angle, val);
             }
         }
     }
 }
-const matrix = createDirMatrix(3105)
-drawUndirMatrixEdges(300, 330);
-drawDirMatrixEdges(800, 330);
-drawVertices(ctx, vertexCount, 300, 330);
-drawVertices(ctx, vertexCount, 800, 330);
+
+const matrix = createDirMatrix(N)
+drawUndirMatrixEdges(300, 330, N);
+drawDirMatrixEdges(800, 330, N);
+drawVertexes(ctx, VERTEX_COUNT, 300, 330);
+drawVertexes(ctx, VERTEX_COUNT, 800, 330);
 matrixOutput(matrix, "dirMatrixTable");
