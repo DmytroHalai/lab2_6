@@ -27,12 +27,13 @@ const pseudoRandom = (seed) => {
 }
 
 const findMaxNeighbourLength = (Coords) => {
-    const point = 0;
     let maxNeighbourLength = 0;
-    for (let i = 0; i < VERTEX_COUNT; i++){
-        const vec = vectorModule(vector(Coords.xCoord[point], Coords.yCoord[point],
-            Coords.xCoord[i], Coords.yCoord[i]));
-        maxNeighbourLength = maxNeighbourLength > vec ? maxNeighbourLength : vec;
+    for (let j = 0; j < VERTEX_COUNT; j++){
+        for (let i = 0; i < VERTEX_COUNT; i++){
+            const vec = vectorModule(vector(Coords.xCoord[j], Coords.yCoord[j],
+                Coords.xCoord[i], Coords.yCoord[i]));
+            maxNeighbourLength = maxNeighbourLength > vec ? maxNeighbourLength : vec;
+        }
     }
     return maxNeighbourLength;
 }
@@ -80,22 +81,18 @@ const findVertexCoord = (vertexCount, firstCoordX, firstCoordy) => {
     Coords.yCoord[0] = firstCoordy;
     for (let i = 1; i < vertexCount; i++){
         switch (i) {
-            case 1: {
-                Coords.xCoord[i] = Coords.xCoord[i - 1];
-                Coords.yCoord[i] = 150;
-                break;
-            }
+            case 1:
             case 2:
-            case 3:
-            case 4: {
+            case 3: {
                 Coords.xCoord[i] = Coords.xCoord[i - 1] + 60;
                 Coords.yCoord[i] = Coords.yCoord[i - 1] + 100;
                 break;
             }
+            case 4:
             case 5:
             case 6:
             case 7: {
-                Coords.xCoord[i] = Coords.xCoord[i - 1] - 120;
+                Coords.xCoord[i] = Coords.xCoord[i - 1] - 90;
                 Coords.yCoord[i] = Coords.yCoord[i - 1];
                 break;
             }
@@ -147,7 +144,7 @@ const lineVal = (Coords, i, j) => {
     let valResult = null;
     for (let k = 0; k < Coords.xCoord.length; k++){
         if(k === i || k === j) continue;
-        if(a <= findMaxNeighbourLength(Coords)) break;
+        if(Math.abs(j - i) === 1) break;
         const vector2 = vector(startX, startY, Coords.xCoord[k], Coords.yCoord[k]);
         const vector3 = vector(Coords.xCoord[k], Coords.yCoord[k], endX, endY);
         const b = vectorModule(vector2);
@@ -228,16 +225,16 @@ const drawArrows = (angle, xArrow, yArrow, n = 0) => {
         leftY,
         rightY;
     if (n === 1){
-        leftX = xArrow - 10 * Math.cos(angle + 0.5 + Math.PI / 3);
-        rightX = xArrow - 10 * Math.cos(angle - 0.5 + Math.PI / 3);
-        leftY = yArrow - 10 * Math.sin(angle + 0.5 + Math.PI / 3);
-        rightY = yArrow - 10 * Math.sin(angle - 0.5 + Math.PI / 3);
+        leftX = xArrow - 15 * Math.cos(angle + 0.5 + Math.PI / 3);
+        rightX = xArrow - 15 * Math.cos(angle - 0.5 + Math.PI / 3);
+        leftY = yArrow - 15 * Math.sin(angle + 0.5 + Math.PI / 3);
+        rightY = yArrow - 15 * Math.sin(angle - 0.5 + Math.PI / 3);
     }
     else {
-        leftX = xArrow - 10 * Math.cos(angle + 0.5);
-        rightX = xArrow - 10 * Math.cos(angle - 0.5);
-        leftY = yArrow - 10 * Math.sin(angle + 0.5);
-        rightY = yArrow - 10 * Math.sin(angle - 0.5);
+        leftX = xArrow - 15 * Math.cos(angle + 0.5);
+        rightX = xArrow - 15 * Math.cos(angle - 0.5);
+        leftY = yArrow - 15 * Math.sin(angle + 0.5);
+        rightY = yArrow - 15 * Math.sin(angle - 0.5);
     }
     ctx.beginPath();
     ctx.moveTo(xArrow, yArrow);
@@ -272,7 +269,7 @@ const drawDirMatrixEdges = (x, y, n) => {
                 const val = lineVal(Coords, i, j);
                 if (i === j) {
                     drawStitch(Coords, i);
-                    arrow(Coords, j, -angle, VERTEX_RADIUS);
+                    arrow(Coords, j, angle, VERTEX_RADIUS);
                 }
                 else if (matrix[j][i] === 1 && i > j || val !== null){
                     const valid = 1;
@@ -299,10 +296,10 @@ const drawUndirMatrixEdges = (x, y, n) => {
                 if (i === j) {
                     drawStitch(Coords, i);
                 }
-                else if (val !== null && Math.abs(i - j) !== 1){
-                    drawEllipse(Coords, i, j, angle, val);
+                else if (val !== null){
+                    drawEllipse(Coords, j, i, angle);
                 }
-                else if (matrix[j][i] === 1){
+                else{
                     drawLine(Coords, i, j);
                 }
             }
@@ -312,9 +309,9 @@ const drawUndirMatrixEdges = (x, y, n) => {
 
 const matrix = createDirMatrix(N)
 const undMatrix = undirMatrix(createDirMatrix(N));
-drawUndirMatrixEdges(300, 330, N);
-drawDirMatrixEdges(800, 330, N);
-drawVertexes(ctx, VERTEX_COUNT, 300, 330);
-drawVertexes(ctx, VERTEX_COUNT, 800, 330);
+drawUndirMatrixEdges(300, 180, N);
+drawDirMatrixEdges(800, 180, N);
+drawVertexes(ctx, VERTEX_COUNT, 300, 180);
+drawVertexes(ctx, VERTEX_COUNT, 800, 180);
 matrixOutput(matrix, "dirMatrixTable");
 matrixOutput(undMatrix, "undirMatrixTable")
