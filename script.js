@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const VERTEX_COUNT = 10;
 const VERTEX_RADIUS = 15;
 const N = 3105;
+
 const vector = (x1, y1, x2, y2) => {
     const x = x2 - x1,
         y = y2 - y1;
@@ -23,6 +24,17 @@ const pseudoRandom = (seed) => {
         value = (value * 1103515245 + 12345) % 2147483648;
         return value % 100 < 19;
     }
+}
+
+const findMaxNeighbourLength = (Coords) => {
+    const point = 0;
+    let maxNeighbourLength = 0;
+    for (let i = 0; i < VERTEX_COUNT; i++){
+        const vec = vectorModule(vector(Coords.xCoord[point], Coords.yCoord[point],
+            Coords.xCoord[i], Coords.yCoord[i]));
+        maxNeighbourLength = maxNeighbourLength > vec ? maxNeighbourLength : vec;
+    }
+    return maxNeighbourLength;
 }
 
 const createDirMatrix = (n) => {
@@ -135,6 +147,7 @@ const lineVal = (Coords, i, j) => {
     let valResult = null;
     for (let k = 0; k < Coords.xCoord.length; k++){
         if(k === i || k === j) continue;
+        if(a <= findMaxNeighbourLength(Coords)) break;
         const vector2 = vector(startX, startY, Coords.xCoord[k], Coords.yCoord[k]);
         const vector3 = vector(Coords.xCoord[k], Coords.yCoord[k], endX, endY);
         const b = vectorModule(vector2);
@@ -161,7 +174,6 @@ const matrixOutput = (matrix, tableId) => {
             cell.textContent = j + 1 + " - ";
         }
 
-        // Add rows and cells with row numbers and matrix values
         for (let i = 0; i < matrix.length; i++) {
             let row = table.insertRow();
             let rowNumberCell = row.insertCell();
@@ -262,16 +274,7 @@ const drawDirMatrixEdges = (x, y, n) => {
                     drawStitch(Coords, i);
                     arrow(Coords, j, -angle, VERTEX_RADIUS);
                 }
-                else if (matrix[j][i] === 1 && j > i){
-                    const valid = 1;
-                    drawEllipse(Coords, i, j, angle);
-                    arrow(Coords, j, angle, VERTEX_RADIUS, valid);
-                }
-                else if (vectorModule(vector(Coords.xCoord[i], Coords.yCoord[i], Coords.xCoord[j], Coords.yCoord[j])) <= 180){
-                    drawLine(Coords, i, j);
-                    arrow(Coords, j, angle, VERTEX_RADIUS);
-                }
-                else if (val !== null){
+                else if (matrix[j][i] === 1 && i > j || val !== null){
                     const valid = 1;
                     drawEllipse(Coords, i, j, angle);
                     arrow(Coords, j, angle, VERTEX_RADIUS, valid);
