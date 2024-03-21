@@ -311,8 +311,10 @@ const drawUndirMatrixEdges = (x, y, n) => {
 }
 
 const matrix = createDirMatrix(N)
+const undMatrix = undirMatrix(createDirMatrix(N));
 drawUndirMatrixEdges(300, 330, N);
 drawDirMatrixEdges(800, 330, N);
 drawVertexes(ctx, VERTEX_COUNT, 300, 330);
 drawVertexes(ctx, VERTEX_COUNT, 800, 330);
 matrixOutput(matrix, "dirMatrixTable");
+matrixOutput(undMatrix, "undirMatrixTable")

@@ -9,13 +9,16 @@
         canvas {
             border: 1px solid black;
         }
-        #dirMatrixTable {
-            flex-direction: row;
-            margin-left: 450px;
+        #dirMatrixTable,
+        #undirMatrixTable {
+            display: inline-block;
+            margin-top: 100px;
+            margin-left: 200px;
         }
     </style>
 </head>
 <body>
+    <table id="undirMatrixTable"></table>
     <table id="dirMatrixTable"></table>
     <canvas id="canvas1" width="1080" height="600"></canvas>
 <script src="script.js"></script>
