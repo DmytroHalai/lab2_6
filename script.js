@@ -165,7 +165,7 @@ const matrixOutput = (matrix, tableId) => {
         const table = document.getElementById(tableId);
 
         let headerRow = table.insertRow();
-        headerRow.insertCell(); // Empty cell for row numbers
+        headerRow.insertCell();
         for (let j = 0; j < matrix[0].length; j++) {
             let cell = headerRow.insertCell();
             cell.textContent = j + 1 + " - ";
