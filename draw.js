@@ -2,6 +2,22 @@
 
 import {findVertexCoord, vector, vectorModule, undirMatrix, createDirMatrix, lineVal, calculateAngle} from "./utility.js";
 
+const createClickQueue = () => {
+    const queue = []; // Черга функцій для виконання
+
+    const enqueue = (action) => {
+        queue.push(action);
+    };
+
+    const next = () => {
+        if (queue.length > 0) {
+            const action = queue.shift(); // Беремо першу дію з черги
+            action(); // Виконуємо дію
+        }
+    };
+
+    return { enqueue, next };
+}
 const drawOnlyVertex = (Coords, i, ctx, radius) => {
     ctx.beginPath();
     ctx.arc(Coords.xCoord[i], Coords.yCoord[i], radius, 0, Math.PI * 2);
@@ -92,6 +108,8 @@ const arrow = (Coords, j, angle, vertexRadius, ctx, n) => {
     const yArrow = Coords.yCoord[j] - vertexRadius * Math.sin(angle);
     drawArrows(angle, xArrow, yArrow, ctx, n);
 }
+
+const clickQueue = createClickQueue();
 
 const drawDirMatrixEdges = (x, y, n, ctx, radius, count) => {
     const matrix = createDirMatrix(n);
