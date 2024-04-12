@@ -153,10 +153,17 @@ const drawDirGraph = (x, y, n, ctx, radius, count) => {
             }
         }
     }
+    console.group("Матриця суміжності графу");
+    console.table(matrix);
+    console.groupEnd();
 }
 
 const BFS = (x, y, count, matrix, a, ctx, radius) => {
     const Coords = findVertexCoord(count, x, y);
+    const bfsMatrix = new Array(matrix.length).fill(0);
+    bfsMatrix.forEach((value, index) => {
+        bfsMatrix[index] = new Array(matrix.length).fill(0);
+    })
     printText(ctx, "Обхід BFS метод", Coords);
     drawVertexes(ctx, count, x, y, radius);
     const q = new Queue();
@@ -164,12 +171,15 @@ const BFS = (x, y, count, matrix, a, ctx, radius) => {
     drawVertexes(ctx, count, x, y, radius,  'н')
     let pointer = 0;
     bfs[a] = 1;
+    let k = 1;
     q.enqueue(a);
     while (!q.isEmpty()){
         const v = q.dequeue();
         for (let u = 0; u < matrix.length; u++){
             if (matrix[v][u] === 1 && bfs[u] === 0){
-                bfs[u] = 1;
+                k++;
+                bfsMatrix[v][u] = 1;
+                bfs[u] = k;
                 q.enqueue(u);
                 drawEdge(Coords, v, u, ctx, radius, pointer, matrix, clickQueue1);
             }
@@ -179,6 +189,12 @@ const BFS = (x, y, count, matrix, a, ctx, radius) => {
         })
         pointer++;
     }
+    console.group("Список відповідності номерів вершин і їх нової нумерації та матриця суміжності дерева BFS обходу");
+    bfs.map((value, index) => {
+        console.log(`Індекс вершини: ${index + 1}, номер вершини по обходу: ${value}`)
+    })
+    console.table(bfsMatrix);
+    console.groupEnd();
     button1.addEventListener("click", clickQueue1.next);
 }
 
@@ -214,6 +230,10 @@ const DFS = (x, y, count, matrix, a, ctx, radius) => {
     const Coords = findVertexCoord(count, x, y);
     printText(ctx, "Обхід DFS метод", Coords);
     drawVertexes(ctx, count, x, y, radius);
+    const dfsMatrix = new Array(matrix.length).fill(0);
+    dfsMatrix.forEach((value, index) => {
+        dfsMatrix[index] = new Array(matrix.length).fill(0);
+    })
     let pointer = 0;
     const s = new Stack();
     const dfs = new Array(matrix.length).fill(0);
@@ -225,6 +245,7 @@ const DFS = (x, y, count, matrix, a, ctx, radius) => {
         const v = s.pop();
         for (let u = 0; u < matrix.length; u++){
             if (matrix[v][u] === 1 && dfs[u] === 0){
+                dfsMatrix[v][u] = 1;
                 k++;
                 dfs[u] = k;
                 s.push(u);
@@ -236,7 +257,12 @@ const DFS = (x, y, count, matrix, a, ctx, radius) => {
         })
         pointer++;
     }
-    console.log(dfs);
+    console.group("Список відповідності номерів вершин і їх нової нумерації та матриця суміжності дерева DFS обходу");
+    dfs.map((value, index) => {
+        console.log(`Індекс вершини: ${index + 1}, номер вершини по обходу: ${value}`)
+    })
+    console.table(dfsMatrix);
+    console.groupEnd();
     button2.addEventListener("click", clickQueue2.next);
 }
 

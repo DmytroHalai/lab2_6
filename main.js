@@ -1,6 +1,5 @@
 'use strict';
 
-import {printMatrix} from "./output.js";
 import {createDirMatrix} from "./utility.js";
 import {drawDirGraph, BFS, DFS} from "./draw.js";
 
@@ -14,4 +13,3 @@ const matrix = createDirMatrix(N)
 drawDirGraph(800, 180, N, ctx, VERTEX_RADIUS, VERTEX_COUNT);
 BFS(300, 180, VERTEX_COUNT, matrix, 0, ctx, VERTEX_RADIUS);
 DFS(1300, 180, VERTEX_COUNT, matrix, 0, ctx, VERTEX_RADIUS);
-printMatrix(matrix);

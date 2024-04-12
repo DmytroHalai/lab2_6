@@ -73,7 +73,7 @@ const createDirMatrix = (n) => {
     for (let i = 0; i < count; i++) {
         matrix[i] = new Array(count);
     }
-    const k = 1.0 - variant[2] * 0.02 - variant[3] * 0.005 - 0.25;
+    const k = 1.0 - variant[2] * 0.01 - variant[3] * 0.005 - 0.15;
     for (let i = 0; i < count; i++) {
         for (let j = 0; j < count; j++) {
             matrix[i][j] = Math.floor(generator() * 2 * k);
