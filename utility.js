@@ -22,18 +22,6 @@ const pseudoRandom = (seed) => {
     }
 }
 
-const undirMatrix = (arr) => {
-    let matrix = arr;
-    for (let i = 0; i < matrix.length; i++){
-        for (let j = 0; j < matrix[i].length; j++){
-            if (matrix[i][j] === 1){
-                matrix[j][i] = 1;
-            }
-        }
-    }
-    return matrix;
-}
-
 const findVertexCoord = (vertexCount, firstCoordX, firstCoordy) => {
     let Coords = {
         xCoord: [],
@@ -127,4 +115,28 @@ const lineVal = (Coords, i, j, radius) => {
     return valResult;
 }
 
-export {vector, vectorModule, pseudoRandom, undirMatrix, findVertexCoord, createDirMatrix, calculateAngle, lineVal};
+const createClickQueue = () => {
+    const queue = []; // Черга функцій для виконання
+
+    const enqueue = (action) => {
+        queue.push(action);
+    };
+
+    const next = () => {
+        if (queue.length > 0) {
+            const action = queue.shift(); // Беремо першу дію з черги
+            action(); // Виконуємо дію
+        }
+    };
+
+    return { enqueue, next };
+}
+
+const printText = (ctx, text, Coords) => {
+    ctx.font = '30px Arial';
+    ctx.fillStyle = 'black';
+    ctx.fillText(text, Coords.xCoord[0], Coords.yCoord[0] - 50);
+}
+
+export {vector, vectorModule, pseudoRandom, findVertexCoord, createDirMatrix, calculateAngle, lineVal,
+    createClickQueue, printText};

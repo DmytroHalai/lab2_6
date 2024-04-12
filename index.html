@@ -15,12 +15,24 @@
             margin-top: 100px;
             margin-left: 200px;
         }
+        #button1 {
+            position: absolute;
+            left: 250px; /* Позиціонуємо кнопку на значенні x = 300px */
+            top: 700px; /* Встановлюємо відстань від верху сторінки */
+        }
+        #button2 {
+            position: absolute;
+            left: 1250px; /* Позиціонуємо кнопку на значенні x = 300px */
+            top: 700px; /* Встановлюємо відстань від верху сторінки */
+        }
     </style>
 </head>
 <body>
     <table id="undirMatrixTable"></table>
     <table id="dirMatrixTable"></table>
-    <canvas id="canvas1" width="1080" height="600"></canvas>
+    <button id="button1">Click to continue tracing</button>
+    <button id="button2">Click to continue tracing</button>
+    <canvas id="canvas1" width="2000" height="600"></canvas>
     <script type="module" src="./main.js"></script>
 </body>
 </html>
