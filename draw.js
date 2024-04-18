@@ -161,14 +161,16 @@ const drawDirGraph = (x, y, n, ctx, radius, count) => {
 const BFS = (x, y, count, matrix, a, ctx, radius) => {
     const Coords = findVertexCoord(count, x, y);
     const bfsMatrix = new Array(matrix.length).fill(0);
+
     bfsMatrix.forEach((value, index) => {
         bfsMatrix[index] = new Array(matrix.length).fill(0);
     })
+
     printText(ctx, "Обхід BFS метод", Coords);
     drawVertexes(ctx, count, x, y, radius);
+    drawVertexes(ctx, count, x, y, radius,  'н')
     const q = new Queue();
     const bfs = new Array(matrix.length).fill(0);
-    drawVertexes(ctx, count, x, y, radius,  'н')
     let pointer = 0;
     bfs[a] = 1;
     let k = 1;
@@ -242,15 +244,17 @@ const DFS = (x, y, count, matrix, a, ctx, radius) => {
     dfs[a] = 1;
     s.push(a);
     while (!s.isEmpty()){
-        const v = s.pop();
+        const v = s.first();
         for (let u = 0; u < matrix.length; u++){
             if (matrix[v][u] === 1 && dfs[u] === 0){
                 dfsMatrix[v][u] = 1;
                 k++;
                 dfs[u] = k;
                 s.push(u);
-                drawEdge(Coords, v, u, ctx, radius, pointer, matrix, clickQueue2);
+                drawEdge(Coords, v, u, ctx, radius, v, matrix, clickQueue2);
+                break;
             }
+            else if (u === matrix.length - 1) s.pop();
         }
         clickQueue2.enqueue(() => {
             drawStatus(Coords, v, ctx, radius, pointer, 'з');
