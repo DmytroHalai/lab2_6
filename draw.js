@@ -8,7 +8,7 @@ const button1 = document.getElementById("button1");
 const button2 = document.getElementById("button2");
 
 const colors = ["red", "blue", "black", "green", "yellow",
-"brown", "#70295a", "orange", "#295b70", "#70294f"]
+    "brown", "#70295a", "orange", "#295b70", "#70294f"]
 
 const drawOnlyVertex = (Coords, i,  ctx, radius, color) => {
     ctx.beginPath();
@@ -43,7 +43,7 @@ const drawVertexes = (ctx, count, x, y, radius, status = '') => {
     for (let i = 0; i < count; i++) {
         const Coords = findVertexCoord(count, x, y);
         status !== '' ? drawStatus(Coords, i, ctx, radius, "black", "н") :
-        drawOnlyVertex(Coords, i, ctx, radius);
+            drawOnlyVertex(Coords, i, ctx, radius);
     }
 }
 
@@ -71,7 +71,7 @@ const drawLine = (Coords, i, j, ctx, radius, angle, color) => {
     ctx.stroke();
     ctx.closePath();
 }
- 
+
 const drawEllipse = (Coords, i, j, angle, ctx, radius, color) => {
     const startX = Coords.xCoord[i] + radius * Math.cos(angle);
     const startY = Coords.yCoord[i] + radius * Math.sin(angle);
@@ -164,11 +164,11 @@ const BFS = (x, y, count, matrix, a, ctx, radius) => {
 
     bfsMatrix.forEach((value, index) => {
         bfsMatrix[index] = new Array(matrix.length).fill(0);
-    })
+    });
 
     printText(ctx, "Обхід BFS метод", Coords);
     drawVertexes(ctx, count, x, y, radius);
-    drawVertexes(ctx, count, x, y, radius,  'н')
+    drawVertexes(ctx, count, x, y, radius,  'н');
     const q = new Queue();
     const bfs = new Array(matrix.length).fill(0);
     let pointer = 0;
@@ -194,7 +194,7 @@ const BFS = (x, y, count, matrix, a, ctx, radius) => {
     console.group("Список відповідності номерів вершин і їх нової нумерації та матриця суміжності дерева BFS обходу");
     bfs.map((value, index) => {
         console.log(`Індекс вершини: ${index + 1}, номер вершини по обходу: ${value}`)
-    })
+    });
     console.table(bfsMatrix);
     console.groupEnd();
     button1.addEventListener("click", clickQueue1.next);
@@ -235,11 +235,11 @@ const DFS = (x, y, count, matrix, a, ctx, radius) => {
     const dfsMatrix = new Array(matrix.length).fill(0);
     dfsMatrix.forEach((value, index) => {
         dfsMatrix[index] = new Array(matrix.length).fill(0);
-    })
+    });
     let pointer = 0;
     const s = new Stack();
     const dfs = new Array(matrix.length).fill(0);
-    drawVertexes(ctx, count, x, y, radius,  'н')
+    drawVertexes(ctx, count, x, y, radius,  'н');
     let k = 1;
     dfs[a] = 1;
     s.push(a);
@@ -263,7 +263,7 @@ const DFS = (x, y, count, matrix, a, ctx, radius) => {
     }
     console.group("Список відповідності номерів вершин і їх нової нумерації та матриця суміжності дерева DFS обходу");
     dfs.map((value, index) => {
-        console.log(`Індекс вершини: ${index + 1}, номер вершини по обходу: ${value}`)
+        console.log(`Індекс вершини: ${index + 1}, номер вершини по обходу: ${value}`);
     })
     console.table(dfsMatrix);
     console.groupEnd();
