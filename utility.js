@@ -18,7 +18,7 @@ const pseudoRandom = (seed) => {
 
     return function() {
         value = (value * 1103515245 + 12345) % 2147483648;
-        return value % 100 < 19;
+        return value % 22 / 30;
     }
 }
 
@@ -61,7 +61,10 @@ const findVertexCoord = (vertexCount, firstCoordX, firstCoordy) => {
     return Coords;
 }
 
-const createDirMatrix = (n) => {
+const findK = (variant) => {
+    return 1.0 - variant[2] * 0.01 - variant[3] * 0.005 - 0.05;
+};
+const createDirMatrix = (n, graphMatrix = true) => {
     const n1 = Math.floor(n / 1000),
         n2 = Math.floor((n - n1 * 1000) / 100),
         n3 = Math.floor((n - n1 * 1000 - n2 * 100) / 10),
@@ -73,10 +76,10 @@ const createDirMatrix = (n) => {
     for (let i = 0; i < count; i++) {
         matrix[i] = new Array(count);
     }
-    const k = 1.0 - variant[2] * 0.01 - variant[3] * 0.005 - 0.15;
+    const k = graphMatrix ? findK(variant) : 1;
     for (let i = 0; i < count; i++) {
         for (let j = 0; j < count; j++) {
-            matrix[i][j] = Math.floor(generator() * 2 * k);
+            matrix[i][j] = graphMatrix ? Math.floor(generator() * 2 * k) : generator() * 2 * k;
         }
     }
     return matrix;

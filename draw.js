@@ -4,8 +4,8 @@ import {findVertexCoord, vector, vectorModule, createDirMatrix, lineVal, calcula
     createClickQueue, printText} from "./utility.js";
 import {Queue, Stack} from "./classes.js";
 
-const button1 = document.getElementById("button1");
-const button2 = document.getElementById("button2");
+// const button1 = document.getElementById("button1");
+// const button2 = document.getElementById("button2");
 
 const colors = ["red", "blue", "black", "green", "yellow",
     "brown", "#70295a", "orange", "#295b70", "#70294f"]
@@ -158,48 +158,6 @@ const drawDirGraph = (x, y, n, ctx, radius, count) => {
     console.groupEnd();
 }
 
-const BFS = (x, y, count, matrix, a, ctx, radius) => {
-    const Coords = findVertexCoord(count, x, y);
-    const bfsMatrix = new Array(matrix.length).fill(0);
-
-    bfsMatrix.forEach((value, index) => {
-        bfsMatrix[index] = new Array(matrix.length).fill(0);
-    });
-
-    printText(ctx, "Обхід BFS метод", Coords);
-    drawVertexes(ctx, count, x, y, radius);
-    drawVertexes(ctx, count, x, y, radius,  'н');
-    const q = new Queue();
-    const bfs = new Array(matrix.length).fill(0);
-    let pointer = 0;
-    bfs[a] = 1;
-    let k = 1;
-    q.enqueue(a);
-    while (!q.isEmpty()){
-        const v = q.dequeue();
-        for (let u = 0; u < matrix.length; u++){
-            if (matrix[v][u] === 1 && bfs[u] === 0){
-                k++;
-                bfsMatrix[v][u] = 1;
-                bfs[u] = k;
-                q.enqueue(u);
-                drawEdge(Coords, v, u, ctx, radius, pointer, matrix, clickQueue1);
-            }
-        }
-        clickQueue1.enqueue(() => {
-            drawStatus(Coords, v, ctx, radius, pointer, 'з');
-        })
-        pointer++;
-    }
-    console.group("Список відповідності номерів вершин і їх нової нумерації та матриця суміжності дерева BFS обходу");
-    bfs.map((value, index) => {
-        console.log(`Індекс вершини: ${index + 1}, номер вершини по обходу: ${value}`)
-    });
-    console.table(bfsMatrix);
-    console.groupEnd();
-    button1.addEventListener("click", clickQueue1.next);
-}
-
 const drawEdge = (Coords, v, u, ctx, radius, pointer, matrix, clickQueue) => {
     const angle = calculateAngle(Coords, v, u);
     clickQueue.enqueue(() => {
@@ -228,47 +186,5 @@ const drawEdge = (Coords, v, u, ctx, radius, pointer, matrix, clickQueue) => {
     }
 }
 
-const DFS = (x, y, count, matrix, a, ctx, radius) => {
-    const Coords = findVertexCoord(count, x, y);
-    printText(ctx, "Обхід DFS метод", Coords);
-    drawVertexes(ctx, count, x, y, radius);
-    const dfsMatrix = new Array(matrix.length).fill(0);
-    dfsMatrix.forEach((value, index) => {
-        dfsMatrix[index] = new Array(matrix.length).fill(0);
-    });
-    let pointer = 0;
-    const s = new Stack();
-    const dfs = new Array(matrix.length).fill(0);
-    drawVertexes(ctx, count, x, y, radius,  'н');
-    let k = 1;
-    dfs[a] = 1;
-    s.push(a);
-    while (!s.isEmpty()){
-        const v = s.first();
-        for (let u = 0; u < matrix.length; u++){
-            if (matrix[v][u] === 1 && dfs[u] === 0){
-                dfsMatrix[v][u] = 1;
-                k++;
-                dfs[u] = k;
-                s.push(u);
-                drawEdge(Coords, v, u, ctx, radius, v, matrix, clickQueue2);
-                break;
-            }
-            else if (u === matrix.length - 1) s.pop();
-        }
-        clickQueue2.enqueue(() => {
-            drawStatus(Coords, v, ctx, radius, pointer, 'з');
-        })
-        pointer++;
-    }
-    console.group("Список відповідності номерів вершин і їх нової нумерації та матриця суміжності дерева DFS обходу");
-    dfs.map((value, index) => {
-        console.log(`Індекс вершини: ${index + 1}, номер вершини по обходу: ${value}`);
-    })
-    console.table(dfsMatrix);
-    console.groupEnd();
-    button2.addEventListener("click", clickQueue2.next);
-}
-
 export {drawVertexes, drawOnlyVertex, vectorModule, vector, arrow,
-    drawStitch, drawLine, drawEllipse, drawArrows, findVertexCoord, drawDirGraph, BFS, DFS}
+    drawStitch, drawLine, drawEllipse, drawArrows, findVertexCoord, drawDirGraph, drawEdge}
