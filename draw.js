@@ -1,19 +1,15 @@
 'use strict';
 
-import {findVertexCoord, vector, vectorModule, createDirMatrix, lineVal, calculateAngle,
-    createClickQueue, printText} from "./utility.js";
-import {Queue, Stack} from "./classes.js";
-
-// const button1 = document.getElementById("button1");
-// const button2 = document.getElementById("button2");
-
+import {findVertexCoord, vector, vectorModule, createDirMatrix, lineVal, calculateAngle, printText} from "./utility.js";
+import {weightMatrix} from "./prima.js";
 const colors = ["red", "blue", "black", "green", "yellow",
     "brown", "#70295a", "orange", "#295b70", "#70294f"]
+
 
 const drawOnlyVertex = (Coords, i,  ctx, radius, color) => {
     ctx.beginPath();
     ctx.arc(Coords.xCoord[i], Coords.yCoord[i], radius, 0, Math.PI * 2);
-    ctx.strokeStyle = colors[color];
+    ctx.strokeStyle = color;
     ctx.stroke();
     ctx.fillStyle = 'white';
     ctx.fill();
@@ -25,7 +21,7 @@ const drawOnlyVertex = (Coords, i,  ctx, radius, color) => {
 const drawStatus = (Coords, i,  ctx, radius, color, status) => {
     ctx.beginPath();
     ctx.arc(Coords.xCoord[i] + radius, Coords.yCoord[i] - radius, radius / 3, 0, Math.PI * 2);
-    ctx.strokeStyle = colors[color];
+    ctx.strokeStyle = color;
     ctx.stroke();
     ctx.fillStyle = 'white';
     ctx.fill();
@@ -52,7 +48,7 @@ const drawStitch = (Coords, i, ctx, radius, color) => {
     ctx.moveTo(Coords.xCoord[i], Coords.yCoord[i]);
     ctx.closePath();
     ctx.beginPath();
-    ctx.strokeStyle = colors[color];
+    ctx.strokeStyle = color;
     ctx.arc(Coords.xCoord[i] - radius, Coords.yCoord[i] - radius,
         radius, 0, Math.PI / 2, true);
     ctx.stroke();
@@ -65,7 +61,7 @@ const drawLine = (Coords, i, j, ctx, radius, angle, color) => {
     const xEnd = Coords.xCoord[j] - radius * Math.cos(angle);
     const yEnd = Coords.yCoord[j] - radius * Math.sin(angle);
     ctx.beginPath();
-    ctx.strokeStyle = colors[color];
+    ctx.strokeStyle = color;
     ctx.moveTo(xStart, yStart);
     ctx.lineTo(xEnd, yEnd);
     ctx.stroke();
@@ -82,10 +78,11 @@ const drawEllipse = (Coords, i, j, angle, ctx, radius, color) => {
     const newAngle = Math.atan2((endY - startY), (endX - startX));
     const triangleRadius = vectorModule(vector(startX, startY, endX, endY))
     ctx.beginPath();
-    ctx.strokeStyle = colors[color];
+    ctx.strokeStyle = color;
     ctx.moveTo(startX, startY);
     ctx.ellipse(middleX, middleY, triangleRadius / 2, radius * 2,
         newAngle, Math.PI, 0);
+
     ctx.stroke();
     ctx.closePath();
     return newAngle;
@@ -109,7 +106,7 @@ const drawArrows = (angle, xArrow, yArrow, ctx, color, n = 0) => {
         rightY = yArrow - 15 * Math.sin(angle - 0.5);
     }
     ctx.beginPath();
-    ctx.strokeStyle = colors[color];
+    ctx.strokeStyle = color;
     ctx.moveTo(xArrow, yArrow);
     ctx.lineTo(leftX, leftY);
     ctx.moveTo(xArrow, yArrow);
@@ -118,73 +115,56 @@ const drawArrows = (angle, xArrow, yArrow, ctx, color, n = 0) => {
     ctx.closePath();
 }
 
+
 const arrow = (Coords, j, angle, vertexRadius, ctx, color, n) => {
     const xArrow = Coords.xCoord[j] - vertexRadius * Math.cos(angle);
     const yArrow = Coords.yCoord[j] - vertexRadius * Math.sin(angle);
     drawArrows(angle, xArrow, yArrow, ctx, color, n);
 }
 
-const clickQueue1 = createClickQueue();
-const clickQueue2 = createClickQueue();
-
-const drawDirGraph = (x, y, n, ctx, radius, count) => {
-    const matrix = createDirMatrix(n);
+const drawGraph = (x, y, n, ctx, radius, count, isUndir = false) => {
+    const matrix = createDirMatrix(n, false);
     const Coords = findVertexCoord(count, x, y);
+    const w = weightMatrix(matrix)
     drawVertexes(ctx, count, x, y, radius);
-    printText(ctx, "Напрямлений граф", Coords);
+    printText(ctx, "Напрямлений граф", Coords.xCoord[0], Coords.yCoord[0] - 50, 30)
     for (let i = 0; i < count; i++) {
-        for (let j = 0; j < count; j++) {
+        const jPointer = isUndir ? i : count;
+        const color = colors[i];
+        for (let j = 0; j < jPointer; j++) {
             if (matrix[i][j] === 1) {
                 const angle = calculateAngle(Coords, i, j);
                 const val = lineVal(Coords, i, j, radius);
                 if (i === j) {
-                    drawStitch(Coords, i, ctx, radius, 2);
-                    arrow(Coords, j, angle, radius, ctx, 2);
+                    drawStitch(Coords, i, ctx, radius, color);
+                    drawWeight(Coords, i, j, ctx, radius, w, 10, true, color)
+                    if(!isUndir) arrow(Coords, j, angle, radius, ctx, color);
                 }
-                else if (matrix[j][i] === 1 && i > j || val !== null){
-                    const valid = 1;
-                    drawEllipse(Coords, i, j, angle, ctx, radius, 2);
-                    arrow(Coords, j, angle, radius, ctx, 2, valid);
+                else if (val !== null){
+                    drawEllipse(Coords, i, j, angle, ctx, radius, color);
+                    drawWeight(Coords, i, j, ctx, radius, w, 10, true, color)
+                    if(!isUndir) arrow(Coords, j, angle, radius, ctx, color);
                 }
                 else {
-                    drawLine(Coords, i, j, ctx, radius, angle, 2);
-                    arrow(Coords, j, angle, radius, ctx, 2);
+                    drawLine(Coords, i, j, ctx, radius, angle, color);
+                    drawWeight(Coords, i, j, ctx, radius, w, 10, color);
+                    if(!isUndir) arrow(Coords, j, angle, radius, ctx, color);
                 }
             }
         }
     }
-    console.group("Матриця суміжності графу");
-    console.table(matrix);
-    console.groupEnd();
 }
 
-const drawEdge = (Coords, v, u, ctx, radius, pointer, matrix, clickQueue) => {
-    const angle = calculateAngle(Coords, v, u);
-    clickQueue.enqueue(() => {
-        drawOnlyVertex(Coords, v, ctx, radius, pointer);
-        drawStatus(Coords, v, ctx, radius, pointer, 'a');
-    })
-    const val = lineVal(Coords, v, u, radius);
-    if (val !== null){
-        const valid = 1;
-        clickQueue.enqueue(() => {
-            drawOnlyVertex(Coords, v, ctx, radius, pointer);
-            drawEllipse(Coords, v, u, angle, ctx, radius, pointer);
-            drawOnlyVertex(Coords, u, ctx, radius, pointer);
-            drawStatus(Coords, u, ctx, radius, pointer, 'в');
-            arrow(Coords, u, angle, radius, ctx, pointer, valid);
-        })
-    }
-    else {
-        clickQueue.enqueue(() => {
-            drawOnlyVertex(Coords, v, ctx, radius, pointer);
-            drawLine(Coords, v, u, ctx, radius, angle, pointer);
-            drawOnlyVertex(Coords, u, ctx, radius, pointer);
-            drawStatus(Coords, u, ctx, radius, pointer, 'в');
-            arrow(Coords, u, angle, radius, ctx, pointer);
-        })
-    }
+const drawWeight = (Coords, start, end, ctx, radius, matrix, size, val = false, color) => {
+    const angle = calculateAngle(Coords, start, end);
+    const xStart = Coords.xCoord[start] + radius * Math.cos(angle);
+    const yStart = Coords.yCoord[start] + radius * Math.sin(angle);
+    const endX = Coords.xCoord[end] - radius * Math.cos(angle);
+    const endY = Coords.yCoord[end] - radius * Math.sin(angle);
+    const x = val ? (xStart + endX) / 2 + radius  : (xStart + endX) / 2 + 5;
+    const y = val ? (yStart + endY) / 2 + radius  : (yStart + endY) / 2 + 5;
+    printText(ctx, matrix[start][end], x, y, size, color)
 }
 
 export {drawVertexes, drawOnlyVertex, vectorModule, vector, arrow,
-    drawStitch, drawLine, drawEllipse, drawArrows, findVertexCoord, drawDirGraph, drawEdge}
+    drawStitch, drawLine, drawEllipse, drawArrows, findVertexCoord, drawGraph, drawWeight}

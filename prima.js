@@ -1,5 +1,49 @@
 'use strict';
 
+import {calculateAngle, createDirMatrix, findVertexCoord, lineVal, undirMatrix} from "./utility.js";
+import {arrow, drawEllipse, drawLine, drawOnlyVertex, drawStitch, drawVertexes, drawWeight} from "./draw.js";
+
+const colors = ["red", "blue", "black", "green", "yellow",
+    "brown", "#70295a", "orange", "#295b70", "#70294f"]
+
+const weightMatrix = (matrix) => {
+    const { length } = matrix;
+    const mat = undirMatrix(matrix);
+    const b = createDirMatrix(3105, true);
+    const cTemp = Array.from({ length }, () => Array(length).fill(0));
+    const c = cTemp.map((value, index) => value.map(
+        (value2, index2) => Math.ceil(100 * b[index][index2] * mat[index][index2])
+    ));
+    const dTemp = Array.from({ length }, () => Array(length).fill(0));
+    const d = dTemp.map((value, index) => value.map(
+        (value2, index2) => c[index][index2] === 0 ? 0 : 1)
+    );
+    const hTemp = Array.from({ length }, () => Array(length).fill(0));
+    const h = hTemp.map((value, index) => value.map(
+        (value2, index2) => d[index][index2] !== d[index2][index] ? 1 : 0)
+    );
+    const tr = Array.from({ length }, () => Array(length).fill(0));
+    for (let i = 0; i < length; i++){
+        for (let j = i; j < length; j++){
+             tr[i][j] = 1;
+        }
+    }
+    const w = Array.from({ length }, () => Array(length).fill(0));
+    for (let i = 0; i < length; i++) {
+        for (let j = 0; j < i; j++) {
+            w[i][j] = w[j][i] = (d[i][j] + h[i][j] * tr[i][j]) * c[i][j];
+        }
+    }
+    // console.table(mat);
+    // console.table(b);
+    // console.table(c);
+    // console.table(d);
+    // console.table(h);
+    // console.table(tr);
+    // console.table(w);
+    return w;
+}
+
 const sort = (matrix) => {
     const { length } = matrix;
     const mat = matrix.map((value) => value.map(Math.round));
@@ -17,8 +61,9 @@ const sort = (matrix) => {
     return result
 };
 
-const dfs = (matrix, start) => {
-    const W = sort(matrix);
+const prima = (matrix, start) => {
+    const weight = weightMatrix(matrix);
+    const W = sort(weight);
     const { length } = matrix;
     const visited = new Array(length).fill(false);
     visited[start] = true;
@@ -40,7 +85,7 @@ const dfs = (matrix, start) => {
             stack.pop();
             continue
         }
-        result.push([vertex, index]);
+        result.push([vertex, index, min]);
         stack.push(index);
         visited[index] = true;
         totalSum += min;
@@ -48,28 +93,53 @@ const dfs = (matrix, start) => {
     return { result, totalSum };
 };
 
-const matrix = [
-    [0, 1, 0, 0, 1, 0, 1],
-    [1, 0, 1, 1, 1, 0, 0],
-    [0, 1, 0, 1, 0, 0, 0],
-    [0, 1, 1, 0, 0, 1, 0],
-    [1, 1, 0, 0, 0, 1, 1],
-    [0, 0, 0, 1, 1, 0, 1],
-    [1, 0, 0, 0, 1, 1, 0]
-];
+const drawPrima = (matrix, x, y, ctx, count, radius, clickQueue, button) => {
+    const w = weightMatrix(matrix);
+    const coords = findVertexCoord(matrix.length, x, y);
+    const array = prima(matrix, 0);
+    console.log('Total sum in result of tracing this graph: ' + array.totalSum)
+    const { length } = array.result;
+    let pointer = 0;
+    drawVertexes(ctx, count, x, y, radius);
+    for (let i = 0; i < length; i++) {
+        const start = array.result[i][0];
+        const end = array.result[i][1];
+        const angle = calculateAngle(coords, start, end);
+        const val = lineVal(coords, start, end, radius);
+        const color = colors[pointer];
+        if (start === end) {
+            clickQueue.enqueue(() => {
+                drawStitch(coords, start, ctx, radius, color);
+                drawOnlyVertex(coords, start, ctx, radius, color);
+                drawOnlyVertex(coords, end, ctx, radius, color);
+                arrow(coords, end, angle, radius, ctx, color);
+                drawWeight(coords, start, end, ctx, radius, w, 10, true, color);
+            })
+        }
+        else if (val !== null){
+            clickQueue.enqueue(() => {
+                drawEllipse(coords, start, end, angle, ctx, radius, color);
+                drawOnlyVertex(coords, start, ctx, radius, color);
+                drawOnlyVertex(coords, end, ctx, radius,color);
+                arrow(coords, end, angle, radius, ctx, color, 1);
+                drawWeight(coords, start, end, ctx, radius, w, 10, true, color);
+            })
 
-const weighted = [
-    [0, 12, Infinity, Infinity, 14, Infinity, 20],
-    [12, 0, 12, 10, 6, Infinity, Infinity],
-    [Infinity, 12, 0, 4, Infinity, Infinity, Infinity],
-    [Infinity, 10, 4, 0, Infinity, 6, Infinity],
-    [14, 6, Infinity, Infinity, 0, 6, 8],
-    [Infinity, Infinity, Infinity, 6, 6, 0, 4],
-    [20, Infinity, Infinity, Infinity, 8, 4, 0]
-];
+        }
+        else{
+            clickQueue.enqueue(() => {
+                drawLine(coords, start, end, ctx, radius, angle, color);
+                drawOnlyVertex(coords, start, ctx, radius, color);
+                drawOnlyVertex(coords, end, ctx, radius, color);
+                arrow(coords, end, angle, radius, ctx, color);
+                drawWeight(coords, start, end, ctx, radius, w, 10, true, color);
+            })
 
-console.table(sort(weighted));
+        }
+        pointer++;
+    }
+    button.addEventListener("click", clickQueue.next);
 
-const { result, totalSum } = dfs(weighted, 0);
-console.log(result);
-console.log(totalSum);
+}
+
+export { weightMatrix, drawPrima, prima};

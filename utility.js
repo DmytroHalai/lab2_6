@@ -9,6 +9,17 @@ const vector = (x1, y1, x2, y2) => {
     }
 }
 
+const undirMatrix = (matrix) => {
+    for (let i = 0; i < matrix.length; i++) {
+        for (let j = 0; j < matrix.length; j++) {
+            if (matrix[i][j] === 1) {
+                matrix[j][i] = 1;
+            }
+        }
+    }
+    return matrix;
+}
+
 const vectorModule = (vector) => {
     return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
 }
@@ -17,8 +28,9 @@ const pseudoRandom = (seed) => {
     let value = seed;
 
     return function() {
-        value = (value * 1103515245 + 12345) % 2147483648;
-        return value % 22 / 30;
+        value = (value * 11 + 4) % 13;
+        //console.log(value * 0.1 % 2)
+        return value * 0.11 % 2;
     }
 }
 
@@ -64,22 +76,23 @@ const findVertexCoord = (vertexCount, firstCoordX, firstCoordy) => {
 const findK = (variant) => {
     return 1.0 - variant[2] * 0.01 - variant[3] * 0.005 - 0.05;
 };
-const createDirMatrix = (n, graphMatrix = true) => {
+
+const createDirMatrix = (n, isB = false) => {
     const n1 = Math.floor(n / 1000),
         n2 = Math.floor((n - n1 * 1000) / 100),
         n3 = Math.floor((n - n1 * 1000 - n2 * 100) / 10),
         n4 = Math.floor((n - n1 * 1000 - n2 * 100 - n3 * 10))
     const variant = [n1, n2, n3, n4];
     const count = 10 + variant[2];
-    const generator = pseudoRandom(n);
+    const generator = pseudoRandom(n)
+    const k = isB ? findK(variant) : 1;
     let matrix = new Array(count);
     for (let i = 0; i < count; i++) {
         matrix[i] = new Array(count);
     }
-    const k = graphMatrix ? findK(variant) : 1;
     for (let i = 0; i < count; i++) {
         for (let j = 0; j < count; j++) {
-            matrix[i][j] = graphMatrix ? Math.floor(generator() * 2 * k) : generator() * 2 * k;
+            matrix[i][j] = isB ? generator(): Math.floor(generator() * k);
         }
     }
     return matrix;
@@ -119,7 +132,7 @@ const lineVal = (Coords, i, j, radius) => {
 }
 
 const createClickQueue = () => {
-    const queue = []; // Черга функцій для виконання
+    const queue = [];
 
     const enqueue = (action) => {
         queue.push(action);
@@ -127,19 +140,19 @@ const createClickQueue = () => {
 
     const next = () => {
         if (queue.length > 0) {
-            const action = queue.shift(); // Беремо першу дію з черги
-            action(); // Виконуємо дію
+            const action = queue.shift();
+            action();
         }
     };
 
     return { enqueue, next };
 }
 
-const printText = (ctx, text, Coords) => {
-    ctx.font = '30px Arial';
-    ctx.fillStyle = 'black';
-    ctx.fillText(text, Coords.xCoord[0], Coords.yCoord[0] - 50);
+const printText = (ctx, text, x, y, size, color) => {
+    ctx.font = `${size}px Arial`;
+    ctx.fillStyle = color;
+    ctx.fillText(text, x, y);
 }
 
 export {vector, vectorModule, pseudoRandom, findVertexCoord, createDirMatrix, calculateAngle, lineVal,
-    createClickQueue, printText};
+    createClickQueue, printText, undirMatrix};
