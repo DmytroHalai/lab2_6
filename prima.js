@@ -85,7 +85,7 @@ const prima = (matrix, start) => {
             stack.pop();
             continue
         }
-        result.push([vertex, index, min]);
+        result.push([vertex, index]);
         stack.push(index);
         visited[index] = true;
         totalSum += min;
@@ -100,6 +100,7 @@ const drawPrima = (matrix, x, y, ctx, count, radius, clickQueue, button) => {
     console.log('Total sum in result of tracing this graph: ' + array.totalSum)
     const { length } = array.result;
     let pointer = 0;
+    console.log('The list of graph edges:');
     drawVertexes(ctx, count, x, y, radius);
     for (let i = 0; i < length; i++) {
         const start = array.result[i][0];
@@ -107,6 +108,7 @@ const drawPrima = (matrix, x, y, ctx, count, radius, clickQueue, button) => {
         const angle = calculateAngle(coords, start, end);
         const val = lineVal(coords, start, end, radius);
         const color = colors[pointer];
+        console.log((start + 1) + ' -> ' + (end + 1));
         if (start === end) {
             clickQueue.enqueue(() => {
                 drawStitch(coords, start, ctx, radius, color);
