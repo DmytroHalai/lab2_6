@@ -97,7 +97,11 @@ const drawPrima = (matrix, x, y, ctx, count, radius, clickQueue, button) => {
     const w = weightMatrix(matrix);
     const coords = findVertexCoord(matrix.length, x, y);
     const array = prima(matrix, 0);
-    console.log('Total sum in result of tracing this graph: ' + array.totalSum)
+    console.log('Adjacency matrix of the graph');
+    console.table(matrix);
+    console.log('Weighted matrix of the graph')
+    console.table(w);
+    console.log('Total sum in result of tracing this graph: ' + array.totalSum);
     const { length } = array.result;
     let pointer = 0;
     console.log('The list of graph edges:');
