@@ -33,26 +33,6 @@ class LinkedList {
         this.size++;
     }
 
-    delete(data) {
-        let current = this.head;
-        let prev = null;
-
-        while (current != null) {
-            if (current.data === data) {
-                if (prev == null) {
-                    this.head = current.next;
-                } else {
-                    prev.next = current.next;
-                }
-                this.size--;
-                return current.data;
-            }
-            prev = current;
-            current = current.next;
-        }
-        return null;
-    }
-
     getSize() {
         return this.size;
     }
