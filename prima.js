@@ -4,7 +4,69 @@ import {calculateAngle, createDirMatrix, findVertexCoord, lineVal, undirMatrix} 
 import {arrow, drawEllipse, drawLine, drawOnlyVertex, drawStitch, drawVertexes, drawWeight} from "./draw.js";
 
 const colors = ["red", "blue", "black", "green", "yellow",
-    "brown", "#70295a", "orange", "#295b70", "#70294f"]
+    "brown", "#70295a", "orange", "#295b70", "#70294f"];
+
+class Node {
+    constructor(data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+class LinkedList {
+    constructor() {
+        this.head = null;
+        this.size = 0;
+    }
+
+    add(data) {
+        const newNode = new Node(data);
+        if (!this.head) {
+            this.head = newNode;
+        } else {
+            let current = this.head;
+            while (current.next) {
+                current = current.next;
+            }
+            current.next = newNode;
+        }
+        this.size++;
+    }
+
+    delete(data) {
+        let current = this.head;
+        let prev = null;
+
+        while (current != null) {
+            if (current.data === data) {
+                if (prev == null) {
+                    this.head = current.next;
+                } else {
+                    prev.next = current.next;
+                }
+                this.size--;
+                return current.data;
+            }
+            prev = current;
+            current = current.next;
+        }
+        return null;
+    }
+
+    getSize() {
+        return this.size;
+    }
+
+    print() {
+        let current = this.head;
+        let result = '';
+        while (current) {
+            result += current.data + ' -> ';
+            current = current.next;
+        }
+        console.log(result + 'null');
+    }
+}
 
 const weightMatrix = (matrix) => {
     const { length } = matrix;
@@ -34,13 +96,6 @@ const weightMatrix = (matrix) => {
             w[i][j] = w[j][i] = (d[i][j] + h[i][j] * tr[i][j]) * c[i][j];
         }
     }
-    // console.table(mat);
-    // console.table(b);
-    // console.table(c);
-    // console.table(d);
-    // console.table(h);
-    // console.table(tr);
-    // console.table(w);
     return w;
 }
 
@@ -58,7 +113,7 @@ const sort = (matrix) => {
     for (const row of result) {
         row.sort(([, k1], [, k2]) => k1 - k2);
     }
-    return result
+    return result;
 };
 
 const prima = (matrix, start) => {
@@ -67,7 +122,7 @@ const prima = (matrix, start) => {
     const { length } = matrix;
     const visited = new Array(length).fill(false);
     visited[start] = true;
-    const result = [];
+    const result = new LinkedList();
     const stack = [start];
     let totalSum = 0;
     while (stack.length) {
@@ -85,7 +140,7 @@ const prima = (matrix, start) => {
             stack.pop();
             continue
         }
-        result.push([vertex, index]);
+        result.add([vertex, index]);
         stack.push(index);
         visited[index] = true;
         totalSum += min;
@@ -97,18 +152,22 @@ const drawPrima = (matrix, x, y, ctx, count, radius, clickQueue, button) => {
     const w = weightMatrix(matrix);
     const coords = findVertexCoord(matrix.length, x, y);
     const array = prima(matrix, 0);
+    console.log(array)
     console.log('Adjacency matrix of the graph');
     console.table(matrix);
-    console.log('Weighted matrix of the graph')
+    console.log('Weighted matrix of the graph');
     console.table(w);
     console.log('Total sum in result of tracing this graph: ' + array.totalSum);
-    const { length } = array.result;
+    const length = array.result.getSize();
+    console.log(length);
     let pointer = 0;
     console.log('The list of graph edges:');
     drawVertexes(ctx, count, x, y, radius);
-    for (let i = 0; i < length; i++) {
-        const start = array.result[i][0];
-        const end = array.result[i][1];
+    array.result.print();
+    let current = array.result.head;
+    while(current !== null){
+        const start = current.data[0];
+        const end = current.data[1];
         const angle = calculateAngle(coords, start, end);
         const val = lineVal(coords, start, end, radius);
         const color = colors[pointer];
@@ -143,6 +202,7 @@ const drawPrima = (matrix, x, y, ctx, count, radius, clickQueue, button) => {
 
         }
         pointer++;
+        current = current.next;
     }
     button.addEventListener("click", clickQueue.next);
 
